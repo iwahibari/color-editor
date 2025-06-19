@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高機能カラーピッカーツール</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        }
+        .color-wheel-container {
+            position: relative;
+            width: 250px;
+            height: 250px;
+        }
+        #colorWheel, #imageCanvas {
+            cursor: crosshair;
+        }
+        #colorWheel {
+            border-radius: 50%;
+        }
+        #imageCanvas {
+            border-radius: 0.5rem; /* 8px */
+        }
+        #cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            outline: none;
+            transition: background .2s;
+        }
+        .dark input[type=range] {
+             background: #374151;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+        .text-3xs {
+            font-size: 0.625rem; /* 10px */
+            line-height: 0.875rem; /* 14px */
+        }
+        /* Favorite star button active state */
+        #saveColorBtn.saved {
+            color: #facc15; /* yellow-400 */
+        }
+        /* Drag-over state for drop zone */
+        .drag-over {
+            border-style: dashed !important;
+            border-color: #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.1) !important;
+        }
+        /* Magnifying loupe */
+        #loupe {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            pointer-events: none;
+            background-repeat: no-repeat;
+            z-index: 50;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated; /* For crisp pixels */
+            transform: translate(-50%, -50%); /* Center on cursor */
+            display: none;
+        }
+        /* Crosshair in the middle of the loupe */
+        #loupe::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            background-color: transparent;
+            border: 1px solid white;
+            box-shadow: 0 0 2px black;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex items-center justify-center min-h-screen py-4">
+
+    <div class="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-2xl w-full max-w-xs mx-4">
+
+        <div class="mb-4">
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                    <button id="pickerTabBtn"></button>
+                    <button id="imageTabBtn"></button>
+                    <button id="savedTabBtn"></button>
+                </nav>
+            </div>
+        </div>
+
+        <div id="tabContainer" class="relative">
+            <div id="pickerTabContent" class="">
+                <div class="flex flex-col items-center">
+                    <div class="color-wheel-container mb-3">
+                        <canvas id="colorWheel" width="250" height="250"></canvas>
+                        <div id="cursor"></div>
+                    </div>
+                    <div class="flex items-center space-x-4 w-full mb-4">
+                        <div class="relative flex-shrink-0">
+                            <div id="colorPreview" class="w-16 h-16 rounded-lg border-4 border-white dark:border-gray-700 shadow-inner"></div>
+                            <button id="saveColorBtn" title="お気に入りに追加/削除" class="absolute -top-1 -right-1 w-7 h-7 flex items-center justify-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-full text-gray-400 dark:text-gray-500 hover:text-yellow-400 transition-colors z-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                            </button>
+                        </div>
+                        <div class="flex-grow min-w-0 space-y-1">
+                            <div class="relative">
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">HEX</label>
+                                <input id="hexCode" type="text" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm p-1.5 rounded-md border-transparent focus:ring-2 focus:ring-blue-500">
+                                <button id="copyHex" title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-8 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white top-2.5">
+                                    <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">RGB</label>
+                                <input id="rgbCode" type="text" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm p-1.5 rounded-md border-transparent focus:ring-2 focus:ring-blue-500">
+                                <button id="copyRgb" title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-8 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white top-2.5">
+                                    <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full space-y-2 mb-4">
+                        <div>
+                            <label for="saturationSlider" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">彩度</label>
+                            <div class="flex items-center space-x-2">
+                                <input id="saturationSlider" type="range" min="0" max="100" class="flex-grow">
+                                <div class="relative w-12">
+                                   <input id="saturationValue" type="number" min="0" max="100" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-xs p-1 pr-4 rounded-md border-transparent text-center focus:ring-2 focus:ring-blue-500">
+                                   <span class="absolute right-1 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="lightnessSlider" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">明度</label>
+                            <div class="flex items-center space-x-2">
+                                <input id="lightnessSlider" type="range" min="0" max="100" class="flex-grow">
+                                <div class="relative w-12">
+                                   <input id="lightnessValue" type="number" min="0" max="100" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-xs p-1 pr-4 rounded-md border-transparent text-center focus:ring-2 focus:ring-blue-500">
+                                    <span class="absolute right-1 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full border-t dark:border-gray-600 pt-3">
+                        <h2 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 text-center">おすすめの配色</h2>
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <div class="space-y-1">
+                                <div id="harmony1Preview" class="w-full h-10 rounded-md border border-gray-200 dark:border-gray-700"></div>
+                                <div class="relative"><input id="harmony1Hex" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                                <div class="relative"><input id="harmony1Rgb" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                            </div>
+                            <div class="space-y-1">
+                                <div id="harmony2Preview" class="w-full h-10 rounded-md border border-gray-200 dark:border-gray-700"></div>
+                                <div class="relative"><input id="harmony2Hex" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                                <div class="relative"><input id="harmony2Rgb" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="imageTabContent" class="absolute inset-0 hidden">
+                <div class="flex flex-col h-full space-y-3">
+                    <div id="imageDropZone" class="flex-grow flex items-center justify-center bg-gray-100 dark:bg-gray-700/50 rounded-lg border-2 border-transparent transition-colors duration-200 min-h-0 relative">
+                        <canvas id="imageCanvas" class="hidden"></canvas>
+                        <div id="imagePlaceholder" class="text-center text-gray-500 dark:text-gray-400 p-4">
+                            <p class="font-bold">画像をここにドラッグ＆ドロップ</p>
+                            <p class="text-sm mt-1">または</p>
+                            <label for="imageUpload" class="mt-2 inline-block text-center bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 cursor-pointer text-sm font-medium">ファイルを選択</label>
+                            <input type="file" id="imageUpload" class="hidden" accept="image/*">
+                        </div>
+                        <div id="loupe"></div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 w-full flex-shrink-0">
+                        <div id="imageColorPreview" class="w-10 h-10 rounded-md border-2 border-white dark:border-gray-600 shadow-sm"></div>
+                        <div class="flex-grow min-w-0">
+                            <input id="imageHexCode" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-xs p-1 rounded-md border-transparent text-center">
+                            <input id="imageRgbCode" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-xs p-1 rounded-md border-transparent text-center mt-1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="savedTabContent" class="absolute inset-0 hidden">
+                 <div id="savedColorsContainer" class="h-full grid grid-cols-2 gap-4 content-start overflow-y-auto pr-2">
+                 </div>
+                 <div id="noSavedColorsMessage" class="absolute inset-0 hidden flex items-center justify-center text-center text-gray-500 dark:text-gray-400">
+                     <span>保存した色はありません</span>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Element Selection ---
+            const getId = (id) => document.getElementById(id);
+            const canvas = getId('colorWheel'), ctx = canvas.getContext('2d'), colorPreview = getId('colorPreview'),
+                  hexCodeInput = getId('hexCode'), rgbCodeInput = getId('rgbCode'), cursor = getId('cursor'),
+                  saturationSlider = getId('saturationSlider'), lightnessSlider = getId('lightnessSlider'),
+                  saturationValue = getId('saturationValue'), lightnessValue = getId('lightnessValue'),
+                  harmony1Preview = getId('harmony1Preview'), harmony1HexInput = getId('harmony1Hex'),
+                  harmony1RgbInput = getId('harmony1Rgb'), harmony2Preview = getId('harmony2Preview'),
+                  harmony2HexInput = getId('harmony2Hex'), harmony2RgbInput = getId('harmony2Rgb'),
+                  pickerTabBtn = getId('pickerTabBtn'), imageTabBtn = getId('imageTabBtn'), savedTabBtn = getId('savedTabBtn'),
+                  tabContainer = getId('tabContainer'),
+                  pickerTabContent = getId('pickerTabContent'), imageTabContent = getId('imageTabContent'), savedTabContent = getId('savedTabContent'),
+                  saveColorBtn = getId('saveColorBtn'), savedColorsContainer = getId('savedColorsContainer'),
+                  noSavedColorsMessage = getId('noSavedColorsMessage'),
+                  imageDropZone = getId('imageDropZone'), imageUpload = getId('imageUpload'),
+                  imageCanvas = getId('imageCanvas'), imageCanvasCtx = imageCanvas.getContext('2d'),
+                  imagePlaceholder = getId('imagePlaceholder'), imageColorPreview = getId('imageColorPreview'),
+                  imageHexCode = getId('imageHexCode'), imageRgbCode = getId('imageRgbCode'),
+                  loupe = getId('loupe');
+
+            // --- State Variables ---
+            const size = canvas.width, center = size / 2, radius = size / 2;
+            let currentHue = 0, currentSaturation = 100, currentLightness = 50, isMouseDown = false;
+            let savedColors = [];
+            let loadedImage = null;
+            let loadedImageSrc = '';
+
+            // --- Color Conversion Utilities ---
+            const hslToRgb=(h,s,l)=>{s/=100;l/=100;const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;let r=0,g=0,b=0;if(0<=h&&h<60){[r,g,b]=[c,x,0]}else if(60<=h&&h<120){[r,g,b]=[x,c,0]}else if(120<=h&&h<180){[r,g,b]=[0,c,x]}else if(180<=h&&h<240){[r,g,b]=[0,x,c]}else if(240<=h&&h<300){[r,g,b]=[x,0,c]}else if(300<=h&&h<360){[r,g,b]=[c,0,x]};return[Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)]};
+            const rgbToHex=(r,g,b)=>`#${((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1).toUpperCase()}`;
+            const hexToRgb=(h)=>{const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);return r?[parseInt(r[1],16),parseInt(r[2],16),parseInt(r[3],16)]:null};
+            const rgbToHsl=(r,g,b)=>{r/=255;g/=255;b/=255;const M=Math.max(r,g,b),m=Math.min(r,g,b);let h=0,s=0,l=(M+m)/2;if(M!==m){const d=M-m;s=l>0.5?d/(2-M-m):d/(M+m);switch(M){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break}h/=6}return[h*360,s*100,l*100]};
+            const parseRgbString=(s)=>{const r=/rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)/.exec(s);if(!r)return null;const[_,R,G,B]=r.map(Number);return R>255||G>255||B>255?null:[R,G,B]};
+
+            // --- UI Update Functions ---
+            const drawColorWheel = () => {
+                const imageData = ctx.createImageData(size, size);
+                const data = imageData.data; const antialias = 0.5;
+                for(let y=0;y<size;y++)for(let x=0;x<size;x++){const dx=x-center,dy=y-center,d=Math.sqrt(dx*dx+dy*dy);if(d>radius+antialias)continue;const a=(Math.atan2(dy,dx)*180/Math.PI+360)%360,s=Math.min(100,(d/radius)*100),[r,g,b]=hslToRgb(a,s,50),i=(y*size+x)*4;data[i]=r;data[i+1]=g;data[i+2]=b;data[i+3]=255*Math.max(0,Math.min(1,radius-d+antialias))}
+                ctx.putImageData(imageData,0,0);
+            };
+            const updateCursorPosition=()=>{const a=currentHue*Math.PI/180,d=currentSaturation/100*radius,x=center+d*Math.cos(a),y=center+d*Math.sin(a);cursor.style.left=`${x}px`;cursor.style.top=`${y}px`;cursor.style.display='block'};
+            
+            // **MODIFICATION**: Changed harmony calculation to Triadic
+            const updateHarmonyColors=()=>{
+                const h1=(currentHue+120)%360,h2=(currentHue+240)%360; // Triadic colors
+                const[r1,g1,b1]=hslToRgb(h1,currentSaturation,currentLightness),hex1=rgbToHex(r1,g1,b1);
+                harmony1Preview.style.backgroundColor=hex1;
+                harmony1HexInput.value=hex1;
+                harmony1RgbInput.value=`rgb(${r1},${g1},${b1})`;
+                const[r2,g2,b2]=hslToRgb(h2,currentSaturation,currentLightness),hex2=rgbToHex(r2,g2,b2);
+                harmony2Preview.style.backgroundColor=hex2;
+                harmony2HexInput.value=hex2;
+                harmony2RgbInput.value=`rgb(${r2},${g2},${b2})`;
+            };
+
+            const updateAll=()=>{const[r,g,b]=hslToRgb(currentHue,currentSaturation,currentLightness),hex=rgbToHex(r,g,b);colorPreview.style.backgroundColor=hex;cursor.style.backgroundColor=hex;if(document.activeElement!==hexCodeInput)hexCodeInput.value=hex;if(document.activeElement!==rgbCodeInput)rgbCodeInput.value=`rgb(${r}, ${g}, ${b})`;if(document.activeElement!==saturationValue)saturationValue.value=Math.round(currentSaturation);if(document.activeElement!==lightnessValue)lightnessValue.value=Math.round(currentLightness);saturationSlider.style.background=`linear-gradient(to right,hsl(${currentHue},0%,${currentLightness}%),hsl(${currentHue},100%,${currentLightness}%))`;lightnessSlider.style.background=`linear-gradient(to right,hsl(${currentHue},${currentSaturation}%,0%),hsl(${currentHue},${currentSaturation}%,50%),hsl(${currentHue},${currentSaturation}%,100%))`;updateHarmonyColors();updateSaveButtonState()};
+            const updateStateAndUI=(h,s,l)=>{currentHue=h;currentSaturation=s;currentLightness=l;saturationSlider.value=s;lightnessSlider.value=l;updateAll();updateCursorPosition()};
+
+            // --- Favorites Management ---
+            const saveColorsToStorage = () => localStorage.setItem('savedColors', JSON.stringify(savedColors));
+            const loadColorsFromStorage = () => {
+                const storedColors = localStorage.getItem('savedColors');
+                if (storedColors) savedColors = JSON.parse(storedColors);
+            };
+            const updateSaveButtonState = () => {
+                const colorString = `${Math.round(currentHue)},${Math.round(currentSaturation)},${Math.round(currentLightness)}`;
+                const isSaved = savedColors.some(c => `${Math.round(c.h)},${Math.round(c.s)},${Math.round(c.l)}` === colorString);
+                saveColorBtn.classList.toggle('saved', isSaved);
+            };
+            const renderSavedColors = () => {
+                savedColorsContainer.innerHTML = '';
+                const hasColors = savedColors.length > 0;
+                noSavedColorsMessage.classList.toggle('hidden', hasColors);
+                if(!hasColors) return;
+                savedColors.forEach((color, index) => {
+                    const [r,g,b] = hslToRgb(color.h, color.s, color.l);
+                    const hex = rgbToHex(r,g,b);
+                    const rgb = `rgb(${r},${g},${b})`;
+                    const card = document.createElement('div');
+                    card.className = "relative group";
+                    card.innerHTML = `
+                        <div class="space-y-1 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div class="w-full h-10 rounded-md border border-gray-200 dark:border-gray-700 cursor-pointer color-select-preview" style="background-color: ${hex};" data-index="${index}"></div>
+                            <div class="relative"><input value="${hex}" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                            <div class="relative"><input value="${rgb}" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                        </div>
+                        <button title="削除" class="delete-btn absolute top-1 right-1 p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors" data-index="${index}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    `;
+                    savedColorsContainer.appendChild(card);
+                });
+            };
+
+            // --- Tab Management ---
+            const setTabContainerHeight = () => {
+                requestAnimationFrame(() => {
+                    const pickerHeight = pickerTabContent.offsetHeight;
+                    if(pickerHeight > 0) {
+                       tabContainer.style.height = `${pickerHeight}px`;
+                    }
+                });
+            };
+
+            // --- Main Event Handlers ---
+            const pickColorFromWheel = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches && e.touches[0];
+                const x = (touch ? touch.clientX : e.clientX) - rect.left;
+                const y = (touch ? touch.clientY : e.clientY) - rect.top;
+
+                if (isNaN(x) || isNaN(y)) return;
+
+                const dx = x - center;
+                const dy = y - center;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist <= radius) {
+                    updateStateAndUI((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, dist / radius * 100, currentLightness);
+                }
+            };
+
+            const copyTimers = new Map();
+            const copyToClipboard = (text, button) => {
+                if (copyTimers.has(button)) clearTimeout(copyTimers.get(button));
+                const oldPopup = button.parentElement.querySelector('.copied-text-popup');
+                if (oldPopup) oldPopup.remove();
+                const originalIconHTML = button.innerHTML, parent = button.parentElement;
+                const tempInput = document.createElement('textarea');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                tempInput.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    const iconSize = button.querySelector('svg.copy-icon').getAttribute('width');
+                    button.innerHTML = `<svg class="mx-auto text-green-500" xmlns="http://www.w3.org/2000/svg" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>`;
+                    button.disabled = true;
+                    const popup = document.createElement('span');
+                    popup.textContent = 'Copied!';
+                    popup.className = 'copied-text-popup absolute -top-6 right-0 text-xs bg-gray-800 text-white px-1.5 py-0.5 rounded shadow-lg pointer-events-none z-10';
+                    parent.appendChild(popup);
+                    const timeoutId = setTimeout(() => {
+                        button.innerHTML = originalIconHTML;
+                        button.disabled = false;
+                        if (parent.contains(popup)) parent.removeChild(popup);
+                        copyTimers.delete(button);
+                    }, 2000);
+                    copyTimers.set(button, timeoutId);
+                } catch (err) {
+                    console.error('Copy failed', err);
+                } finally {
+                    document.body.removeChild(tempInput);
+                }
+            };
+
+            function setupEventListeners(){
+                const start=(e)=>{e.preventDefault();isMouseDown=true;pickColorFromWheel(e)},move=(e)=>{if(isMouseDown)pickColorFromWheel(e)},end=()=>{isMouseDown=false};
+                canvas.addEventListener('mousedown',start);window.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+                canvas.addEventListener('touchstart',start,{passive:false});window.addEventListener('touchmove',move,{passive:false});window.addEventListener('touchend',end);
+
+                saturationSlider.addEventListener('input',()=>updateStateAndUI(currentHue,parseFloat(saturationSlider.value),currentLightness));
+                lightnessSlider.addEventListener('input',()=>updateStateAndUI(currentHue,currentSaturation,parseFloat(lightnessSlider.value)));
+                saturationValue.addEventListener('change',(e)=>{let v=parseInt(e.target.value,10);v=isNaN(v)?currentSaturation:Math.max(0,Math.min(100,v));updateStateAndUI(currentHue,v,currentLightness)});
+                lightnessValue.addEventListener('change',(e)=>{let v=parseInt(e.target.value,10);v=isNaN(v)?currentLightness:Math.max(0,Math.min(100,v));updateStateAndUI(currentHue,currentSaturation,v)});
+
+                hexCodeInput.addEventListener('change',()=>{const rgb=hexToRgb(hexCodeInput.value);if(rgb){updateStateAndUI(...rgbToHsl(...rgb))}else{const[r,g,b]=hslToRgb(currentHue,currentSaturation,currentLightness);hexCodeInput.value=rgbToHex(r,g,b)}});
+                rgbCodeInput.addEventListener('change',()=>{const rgb=parseRgbString(rgbCodeInput.value);if(rgb){updateStateAndUI(...rgbToHsl(...rgb))}else{const[r,g,b]=hslToRgb(currentHue,currentSaturation,currentLightness);rgbCodeInput.value=`rgb(${r},${g},${b})`}});
+
+                document.body.addEventListener('click', (e) => {
+                    const copyButton = e.target.closest('.copy-btn');
+                    if (copyButton) {
+                         const inputToCopy = copyButton.previousElementSibling;
+                         if(inputToCopy) copyToClipboard(inputToCopy.value, copyButton);
+                    }
+                    const deleteButton = e.target.closest('.delete-btn');
+                    if (deleteButton) {
+                        const index = parseInt(deleteButton.dataset.index, 10);
+                        savedColors.splice(index, 1);
+                        saveColorsToStorage();
+                        renderSavedColors();
+                        updateSaveButtonState();
+                    }
+                    const preview = e.target.closest('.color-select-preview');
+                    if(preview){
+                        const index = parseInt(preview.dataset.index, 10);
+                        const color = savedColors[index];
+                        if(color){
+                            updateStateAndUI(color.h, color.s, color.l);
+                            pickerTabBtn.click();
+                        }
+                    }
+                });
+
+                // Tab Switching Logic
+                const tabs = [pickerTabBtn, imageTabBtn, savedTabBtn];
+                const tabContents = [pickerTabContent, imageTabContent, savedTabContent];
+                const baseTabClasses = "whitespace-nowrap py-2 px-1 border-b-2 text-sm transition-colors duration-200".split(" ");
+                const activeTabClasses = "font-bold text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500".split(" ");
+                const inactiveTabClasses = "font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600".split(" ");
+
+                function activateTab(tabToActivate) {
+                    tabs.forEach(tab => {
+                        tab.className = '';
+                        tab.classList.add(...baseTabClasses, ...inactiveTabClasses);
+                    });
+                    tabToActivate.classList.remove(...inactiveTabClasses);
+                    tabToActivate.classList.add(...activeTabClasses);
+
+                    tabContents.forEach(c => c.classList.add('hidden'));
+
+                    const contentToShow = tabs.indexOf(tabToActivate);
+                    tabContents[contentToShow].classList.remove('hidden');
+
+                    setTabContainerHeight();
+
+                    if (tabToActivate === savedTabBtn) {
+                        renderSavedColors();
+                    }
+                }
+
+                tabs.forEach((tab, index) => {
+                     tab.textContent = ['ピッカー', '画像から抽出', 'お気に入り'][index];
+                     tab.addEventListener('click', () => activateTab(tab));
+                });
+
+                activateTab(pickerTabBtn); // Set initial tab
+
+                // Save to Favorites Button
+                saveColorBtn.addEventListener('click', () => {
+                    const color = {h: currentHue, s: currentSaturation, l: currentLightness};
+                    const colorString = `${Math.round(color.h)},${Math.round(color.s)},${Math.round(color.l)}`;
+                    const existingIndex = savedColors.findIndex(c => `${Math.round(c.h)},${Math.round(c.s)},${Math.round(c.l)}` === colorString);
+                    if (existingIndex > -1) {
+                        savedColors.splice(existingIndex, 1);
+                    } else {
+                        savedColors.push(color);
+                    }
+                    saveColorsToStorage();
+                    updateSaveButtonState();
+                    renderSavedColors();
+                });
+
+                // --- Image Tab Logic ---
+                function handleImageFile(file) {
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            loadedImageSrc = event.target.result;
+                            loadedImage = new Image();
+                            loadedImage.onload = () => {
+                                imagePlaceholder.classList.add('hidden');
+                                imageCanvas.classList.remove('hidden');
+                                const canvasWidth = imageDropZone.clientWidth;
+                                const scale = canvasWidth / loadedImage.width;
+                                imageCanvas.width = canvasWidth;
+                                imageCanvas.height = loadedImage.height * scale;
+                                // Draw image on canvas to allow pixel data retrieval
+                                imageCanvasCtx.drawImage(loadedImage, 0, 0, imageCanvas.width, imageCanvas.height);
+                                setTabContainerHeight();
+                            };
+                            loadedImage.src = loadedImageSrc;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+
+                imageUpload.addEventListener('change', (e) => handleImageFile(e.target.files[0]));
+
+                // Drag and Drop
+                imageDropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    imageDropZone.classList.add('drag-over');
+                });
+                imageDropZone.addEventListener('dragleave', () => imageDropZone.classList.remove('drag-over'));
+                imageDropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    imageDropZone.classList.remove('drag-over');
+                    handleImageFile(e.dataTransfer.files[0]);
+                });
+
+                // Update real-time preview in image tab
+                const updateImageColorPreview = (r, g, b) => {
+                    const hex = rgbToHex(r,g,b);
+                    imageColorPreview.style.backgroundColor = hex;
+                    imageHexCode.value = hex;
+                    imageRgbCode.value = `rgb(${r}, ${g}, ${b})`;
+                };
+
+                // Get color from a specific point on the canvas
+                const getColorAtPoint = (canvasEl, x, y) => {
+                    const ctxEl = canvasEl.getContext('2d');
+                    // Clamp coordinates to be within canvas bounds
+                    const clampedX = Math.min(Math.max(0, x), canvasEl.width - 1);
+                    const clampedY = Math.min(Math.max(0, y), canvasEl.height - 1);
+                    const pixel = ctxEl.getImageData(clampedX, clampedY, 1, 1).data;
+                    return [pixel[0], pixel[1], pixel[2]];
+                };
+
+                // Select color on click and switch to picker tab
+                imageCanvas.addEventListener('click', (e) => {
+                    if (!loadedImage) return;
+                    const rect = imageCanvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const [r, g, b] = getColorAtPoint(imageCanvas, x, y);
+                    const [h, s, l] = rgbToHsl(r, g, b);
+
+                    // Update main picker state
+                    updateStateAndUI(h, s, l);
+                    // **MODIFICATION**: Switch to picker tab
+                    pickerTabBtn.click();
+                });
+
+                // Show loupe and update preview on mouse move
+                imageCanvas.addEventListener('mousemove', (e) => {
+                    if (!loadedImage) return;
+                    loupe.style.display = 'block';
+
+                    const rect = imageCanvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    // Position loupe over the cursor
+                    const loupeLeft = e.clientX - imageDropZone.getBoundingClientRect().left;
+                    const loupeTop = e.clientY - imageDropZone.getBoundingClientRect().top;
+                    loupe.style.left = `${loupeLeft}px`;
+                    loupe.style.top = `${loupeTop}px`;
+
+                    // Configure loupe zoom effect
+                    const zoom = 10; // Zoom factor for magnifier
+                    const canvasScale = loadedImage.width / imageCanvas.width;
+                    const bgX = (x * canvasScale * zoom) - (loupe.offsetWidth / 2);
+                    const bgY = (y * canvasScale * zoom) - (loupe.offsetHeight / 2);
+
+                    loupe.style.backgroundImage = `url(${loadedImageSrc})`;
+                    loupe.style.backgroundSize = `${loadedImage.width * zoom}px ${loadedImage.height * zoom}px`;
+                    loupe.style.backgroundPosition = `-${bgX}px -${bgY}px`;
+
+                    // Update real-time color preview
+                    const [r, g, b] = getColorAtPoint(imageCanvas, x, y);
+                    updateImageColorPreview(r, g, b);
+                });
+
+                // Hide loupe when mouse leaves the canvas area
+                imageCanvas.addEventListener('mouseleave', () => {
+                    loupe.style.display = 'none';
+                });
+
+                window.addEventListener('resize', setTabContainerHeight);
+            }
+
+            // --- Initialization ---
+            loadColorsFromStorage();
+            drawColorWheel();
+            setupEventListeners();
+            updateStateAndUI(currentHue, currentSaturation, currentLightness);
+            setTabContainerHeight();
+        });
+    </script>
+</body>
+</html>
