@@ -158,7 +158,7 @@
                     <div class="flex items-center space-x-4 w-full mb-4">
                         <div class="relative flex-shrink-0">
                             <div id="colorPreview" class="w-16 h-16 rounded-lg border-4 border-white dark:border-gray-700 shadow-inner"></div>
-                            <button id="saveColorBtn" title="お気に入りに追加/削除" class="absolute -top-1 -right-1 w-7 h-7 flex items-center justify-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-full text-gray-400 dark:text-gray-500 hover:text-yellow-400 transition-colors z-10">
+                            <button id="saveColorBtn" title="Add to favorites" class="absolute -top-1 -right-1 w-7 h-7 flex items-center justify-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-full text-gray-400 dark:text-gray-500 hover:text-yellow-400 transition-colors z-10">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
                             </button>
                         </div>
@@ -477,7 +477,7 @@
                 }
 
                 tabs.forEach((tab, index) => {
-                     tab.textContent = ['Color Picker', 'Extract from image', 'Favorites'][index];
+                     tab.textContent = ['Picker', 'Image extraction', 'Favorites'][index];
                      tab.addEventListener('click', () => activateTab(tab));
                 });
 
