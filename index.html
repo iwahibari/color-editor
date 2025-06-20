@@ -12,8 +12,8 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カラーピッカー（カラーコードを編集・コピー・画像から色抽出）</title>
-    <meta name="description" content="WEB上で動くシンプルなカラーピッカーツールです。画面の横に置きながら作業をすることを想定しています。">
+    <title>Color Picker (edit and copy color codes, extract colors from images)</title>
+    <meta name="description" content="This is a simple color picker tool that runs on the web. It is designed to be placed next to the screen while working.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -166,14 +166,14 @@
                             <div class="relative">
                                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">HEX</label>
                                 <input id="hexCode" type="text" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm p-1.5 rounded-md border-transparent focus:ring-2 focus:ring-blue-500">
-                                <button id="copyHex" title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-8 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white top-2.5">
+                                <button id="copyHex" title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-8 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white top-2.5">
                                     <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                 </button>
                             </div>
                             <div class="relative">
                                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">RGB</label>
                                 <input id="rgbCode" type="text" class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm p-1.5 rounded-md border-transparent focus:ring-2 focus:ring-blue-500">
-                                <button id="copyRgb" title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-8 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white top-2.5">
+                                <button id="copyRgb" title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-8 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white top-2.5">
                                     <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                                 </button>
                             </div>
@@ -181,7 +181,7 @@
                     </div>
                     <div class="w-full space-y-2 mb-4">
                         <div>
-                            <label for="saturationSlider" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">彩度</label>
+                            <label for="saturationSlider" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">saturation</label>
                             <div class="flex items-center space-x-2">
                                 <input id="saturationSlider" type="range" min="0" max="100" class="flex-grow">
                                 <div class="relative w-12">
@@ -191,7 +191,7 @@
                             </div>
                         </div>
                         <div>
-                            <label for="lightnessSlider" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">明度</label>
+                            <label for="lightnessSlider" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-0.5">brightness</label>
                             <div class="flex items-center space-x-2">
                                 <input id="lightnessSlider" type="range" min="0" max="100" class="flex-grow">
                                 <div class="relative w-12">
@@ -202,17 +202,17 @@
                         </div>
                     </div>
                     <div class="w-full border-t dark:border-gray-600 pt-3">
-                        <h2 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 text-center">おすすめの配色</h2>
+                        <h2 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 text-center">Recommended color scheme</h2>
                         <div class="grid grid-cols-2 gap-2.5">
                             <div class="space-y-1">
                                 <div id="harmony1Preview" class="w-full h-10 rounded-md border border-gray-200 dark:border-gray-700"></div>
-                                <div class="relative"><input id="harmony1Hex" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
-                                <div class="relative"><input id="harmony1Rgb" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                                <div class="relative"><input id="harmony1Hex" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                                <div class="relative"><input id="harmony1Rgb" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
                             </div>
                             <div class="space-y-1">
                                 <div id="harmony2Preview" class="w-full h-10 rounded-md border border-gray-200 dark:border-gray-700"></div>
-                                <div class="relative"><input id="harmony2Hex" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
-                                <div class="relative"><input id="harmony2Rgb" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                                <div class="relative"><input id="harmony2Hex" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                                <div class="relative"><input id="harmony2Rgb" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
                             </div>
                         </div>
                     </div>
@@ -224,9 +224,9 @@
                     <div id="imageDropZone" class="flex-grow flex items-center justify-center bg-gray-100 dark:bg-gray-700/50 rounded-lg border-2 border-transparent transition-colors duration-200 min-h-0 relative">
                         <canvas id="imageCanvas" class="hidden"></canvas>
                         <div id="imagePlaceholder" class="text-center text-gray-500 dark:text-gray-400 p-4">
-                            <p class="font-bold">画像をここにドラッグ＆ドロップ</p>
-                            <p class="text-sm mt-1">または</p>
-                            <label for="imageUpload" class="mt-2 inline-block text-center bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 cursor-pointer text-sm font-medium">ファイルを選択</label>
+                            <p class="font-bold">Please drag and drop the files</p>
+                            <p class="text-sm mt-1">or</p>
+                            <label for="imageUpload" class="mt-2 inline-block text-center bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 cursor-pointer text-sm font-medium">Click here</label>
                             <input type="file" id="imageUpload" class="hidden" accept="image/*">
                         </div>
                         <div id="loupe"></div>
@@ -246,7 +246,7 @@
                  <div id="savedColorsContainer" class="h-full grid grid-cols-2 gap-4 content-start overflow-y-auto pr-2">
                  </div>
                  <div id="noSavedColorsMessage" class="absolute inset-0 hidden flex items-center justify-center text-center text-gray-500 dark:text-gray-400">
-                     <span>保存した色はありません</span>
+                     <span>Add it to your favorites and it will appear here.</span>
                  </div>
             </div>
         </div>
@@ -338,8 +338,8 @@
                     card.innerHTML = `
                         <div class="space-y-1 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                             <div class="w-full h-10 rounded-md border border-gray-200 dark:border-gray-700 cursor-pointer color-select-preview" style="background-color: ${hex};" data-index="${index}"></div>
-                            <div class="relative"><input value="${hex}" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="HEXをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
-                            <div class="relative"><input value="${rgb}" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="RGBをコピー" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                            <div class="relative"><input value="${hex}" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
+                            <div class="relative"><input value="${rgb}" type="text" readonly class="w-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-3xs p-1 pr-5 rounded-sm border-transparent text-center"><button title="Copy" class="copy-btn absolute inset-y-0 right-0 flex items-center justify-center w-6 h-full text-gray-500 hover:text-gray-800 dark:hover:text-white"><svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button></div>
                         </div>
                         <button title="削除" class="delete-btn absolute top-1 right-1 p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors" data-index="${index}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -477,7 +477,7 @@
                 }
 
                 tabs.forEach((tab, index) => {
-                     tab.textContent = ['ピッカー', '画像から抽出', 'お気に入り'][index];
+                     tab.textContent = ['Color Picker', 'Extract from image', 'Favorites'][index];
                      tab.addEventListener('click', () => activateTab(tab));
                 });
 
